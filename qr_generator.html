@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二维码生成器 - 微信分享助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .qr-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .qr-code {
+            margin: 20px 0;
+        }
+
+        .instructions {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .instructions h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .tip {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            color: #856404;
+        }
+
+        .tip strong {
+            color: #d63031;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 微信分享助手</h1>
+        <p class="subtitle">解决微信链接拦截问题</p>
+
+        <div class="input-group">
+            <label for="urlInput">🌐 输入您的网址：</label>
+            <input type="text" id="urlInput" placeholder="例如：https://your-site.netlify.app" />
+        </div>
+
+        <button class="btn" onclick="generateQR()">🎯 生成二维码</button>
+        <button class="btn" onclick="getLocalIP()">🔍 获取本机地址</button>
+
+        <div id="qrContainer" class="qr-container">
+            <h3>📲 扫描二维码访问</h3>
+            <div id="qrCode" class="qr-code"></div>
+            <button class="btn" onclick="downloadQR()">💾 下载二维码</button>
+        </div>
+
+        <div class="instructions">
+            <h3>🚀 使用方法：</h3>
+            <ol>
+                <li><strong>输入网址</strong>：粘贴您的 Netlify 部署地址</li>
+                <li><strong>生成二维码</strong>：点击"生成二维码"按钮</li>
+                <li><strong>微信分享</strong>：将二维码图片发送到微信</li>
+                <li><strong>扫码访问</strong>：朋友扫描二维码即可访问</li>
+            </ol>
+            
+            <h3>📝 Netlify 域名优化建议：</h3>
+            <ol>
+                <li><strong>修改站点名称</strong>：在 Netlify 项目设置中修改为简洁名称</li>
+                <li><strong>自定义域名</strong>：绑定自己的域名提高信任度</li>
+                <li><strong>使用短链接</strong>：通过短链接服务包装 URL</li>
+            </ol>
+        </div>
+
+        <div class="tip">
+            <strong>💡 小贴士：</strong> 
+            Netlify 部署的页面全球可访问，无需同一网络。如果微信仍然拦截，二维码是最可靠的分享方式！
+        </div>
+    </div>
+
+    <script>
+        let currentQRCanvas = null;
+        let qrCodeLibLoaded = false;
+
+        // 动态加载 QRCode 库
+        function loadQRCodeLib() {
+            return new Promise((resolve, reject) => {
+                if (qrCodeLibLoaded && typeof QRCode !== 'undefined') {
+                    resolve();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+                script.onload = () => {
+                    qrCodeLibLoaded = true;
+                    resolve();
+                };
+                script.onerror = () => {
+                    reject(new Error('QRCode库加载失败'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        async function generateQR() {
+            const url = document.getElementById('urlInput').value.trim();
+            
+            if (!url) {
+                alert('请输入网址！');
+                return;
+            }
+
+            // 验证URL格式
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                alert('请输入完整的网址（以 http:// 或 https:// 开头）');
+                return;
+            }
+
+            const qrContainer = document.getElementById('qrContainer');
+            const qrCodeDiv = document.getElementById('qrCode');
+            
+            // 显示加载状态
+            qrCodeDiv.innerHTML = '<p style="color: #667eea; text-align: center;">🔄 正在生成二维码...</p>';
+            qrContainer.style.display = 'block';
+
+            try {
+                // 确保 QRCode 库已加载
+                await loadQRCodeLib();
+                
+                // 清空加载状态
+                qrCodeDiv.innerHTML = '';
+                
+                // 生成二维码
+                QRCode.toCanvas(url, {
+                    width: 256,
+                    height: 256,
+                    colorDark: '#333333',
+                    colorLight: '#ffffff',
+                    margin: 2,
+                    errorCorrectionLevel: 'M'
+                }, function (error, canvas) {
+                    if (error) {
+                        qrCodeDiv.innerHTML = '<p style="color: red; text-align: center;">❌ 生成二维码失败：' + error + '</p>';
+                        return;
+                    }
+                    
+                    canvas.style.border = '2px solid #ddd';
+                    canvas.style.borderRadius = '10px';
+                    qrCodeDiv.appendChild(canvas);
+                    currentQRCanvas = canvas;
+                    
+                    // 添加URL显示
+                    const urlDisplay = document.createElement('p');
+                    urlDisplay.textContent = '网址：' + url;
+                    urlDisplay.style.marginTop = '10px';
+                    urlDisplay.style.color = '#666';
+                    urlDisplay.style.fontSize = '14px';
+                    urlDisplay.style.wordBreak = 'break-all';
+                    qrCodeDiv.appendChild(urlDisplay);
+                });
+            } catch (error) {
+                // 使用备用方案：在线二维码生成API
+                console.error('QRCode library loading failed:', error);
+                generateQRFallback(url, qrCodeDiv);
+            }
+        }
+
+        // 备用二维码生成方案
+        function generateQRFallback(url, qrCodeDiv) {
+            const encodedUrl = encodeURIComponent(url);
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodedUrl}`;
+            
+            const img = document.createElement('img');
+            img.src = qrApiUrl;
+            img.style.border = '2px solid #ddd';
+            img.style.borderRadius = '10px';
+            img.style.maxWidth = '100%';
+            img.alt = '二维码';
+            
+            img.onload = function() {
+                qrCodeDiv.innerHTML = '';
+                qrCodeDiv.appendChild(img);
+                
+                // 添加URL显示
+                const urlDisplay = document.createElement('p');
+                urlDisplay.textContent = '网址：' + url;
+                urlDisplay.style.marginTop = '10px';
+                urlDisplay.style.color = '#666';
+                urlDisplay.style.fontSize = '14px';
+                urlDisplay.style.wordBreak = 'break-all';
+                qrCodeDiv.appendChild(urlDisplay);
+                
+                // 添加下载功能（备用方案）
+                const downloadBtn = document.createElement('a');
+                downloadBtn.href = qrApiUrl;
+                downloadBtn.download = 'dji-pocket3-qrcode.png';
+                downloadBtn.textContent = '💾 下载二维码';
+                downloadBtn.className = 'btn';
+                downloadBtn.style.display = 'inline-block';
+                downloadBtn.style.marginTop = '10px';
+                qrCodeDiv.appendChild(downloadBtn);
+            };
+            
+            img.onerror = function() {
+                qrCodeDiv.innerHTML = '<p style="color: red; text-align: center;">❌ 二维码生成失败，请检查网络连接</p>';
+            };
+        }
+
+        function downloadQR() {
+            if (!currentQRCanvas) {
+                alert('请先生成二维码！');
+                return;
+            }
+
+            // 创建下载链接
+            const link = document.createElement('a');
+            link.download = 'dji-pocket3-qrcode.png';
+            link.href = currentQRCanvas.toDataURL();
+            link.click();
+        }
+
+        function getLocalIP() {
+            // 尝试获取本机IP（仅在支持的浏览器中工作）
+            const urlInput = document.getElementById('urlInput');
+            
+            // 提示用户查看服务器输出
+            alert('请查看服务器启动时显示的"局域网访问"地址，然后手动输入到上方输入框中。\n\n例如：http://192.168.1.100:8000');
+            
+            // 设置一个示例
+            if (!urlInput.value) {
+                urlInput.value = 'http://192.168.1.100:8000';
+                urlInput.focus();
+                urlInput.select();
+            }
+        }
+
+        // 页面加载时的提示
+        window.onload = function() {
+            const urlInput = document.getElementById('urlInput');
+            
+            // 检查是否在本地环境
+            if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+                urlInput.value = location.origin;
+            } else {
+                // 预填充您的 Netlify 地址
+                urlInput.value = 'https://68bfecc4565c470fecbb924b--zesty-basbousa-2f20de.netlify.app/';
+            }
+        };
+    </script>
+</body>
+</html>

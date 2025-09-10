@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短链接生成器 - 微信分享专用</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .result {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .short-links {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .link-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e1e1e1;
+        }
+
+        .link-item h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .link-item a {
+            color: #333;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            font-size: 14px;
+            padding: 8px 16px;
+            margin-left: 10px;
+        }
+
+        .instructions {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .instructions h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            color: #856404;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 短链接生成器</h1>
+        <p class="subtitle">绕过微信链接拦截的最佳方案</p>
+
+        <div class="input-group">
+            <label for="originalUrl">🌐 您的 Netlify 网址：</label>
+            <textarea id="originalUrl" rows="3" placeholder="粘贴您的完整网址，如：https://68bfecc4565c470fecbb924b--zesty-basbousa-2f20de.netlify.app/"></textarea>
+        </div>
+
+        <button class="btn" onclick="generateShortLinks()">🚀 生成短链接</button>
+
+        <div id="result" class="result">
+            <h3>📱 可用的短链接服务：</h3>
+            <div id="shortLinks" class="short-links"></div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 使用说明：</h3>
+            <ol>
+                <li><strong>复制您的网址</strong>：从浏览器地址栏复制完整网址</li>
+                <li><strong>粘贴到上方</strong>：粘贴到输入框中</li>
+                <li><strong>生成短链接</strong>：点击生成按钮</li>
+                <li><strong>选择服务</strong>：选择一个短链接服务</li>
+                <li><strong>复制分享</strong>：复制短链接到微信分享</li>
+            </ol>
+            
+            <h3>🎯 推荐顺序：</h3>
+            <ol>
+                <li><strong>TinyURL</strong> - 最稳定，微信很少拦截</li>
+                <li><strong>Is.gd</strong> - 简洁域名，通过率高</li>
+                <li><strong>Bit.ly</strong> - 知名度高，但需要注册</li>
+            </ol>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ 重要提示：</strong> 
+            短链接服务可能会有延迟，建议生成后先自己测试一下再分享给朋友。
+        </div>
+    </div>
+
+    <script>
+        function generateShortLinks() {
+            const originalUrl = document.getElementById('originalUrl').value.trim();
+            
+            if (!originalUrl) {
+                alert('请输入您的网址！');
+                return;
+            }
+
+            if (!originalUrl.startsWith('http://') && !originalUrl.startsWith('https://')) {
+                alert('请输入完整的网址（以 http:// 或 https:// 开头）');
+                return;
+            }
+
+            const resultDiv = document.getElementById('result');
+            const shortLinksDiv = document.getElementById('shortLinks');
+            
+            // 显示结果区域
+            resultDiv.style.display = 'block';
+            
+            // 生成各种短链接服务的链接
+            const services = [
+                {
+                    name: 'TinyURL',
+                    description: '最稳定的短链接服务，微信通过率最高',
+                    url: `https://tinyurl.com/create.php?url=${encodeURIComponent(originalUrl)}`,
+                    direct: false
+                },
+                {
+                    name: 'Is.gd',
+                    description: '简洁域名，通过率很高',
+                    url: `https://is.gd/create.php?format=simple&url=${encodeURIComponent(originalUrl)}`,
+                    direct: false
+                },
+                {
+                    name: 'Bit.ly',
+                    description: '知名短链接服务，需要注册账号',
+                    url: `https://bitly.com/`,
+                    direct: false
+                },
+                {
+                    name: 'T.cn (新浪)',
+                    description: '新浪短链接，国内用户友好',
+                    url: `https://weibo.com/`,
+                    direct: false
+                }
+            ];
+
+            shortLinksDiv.innerHTML = services.map(service => `
+                <div class="link-item">
+                    <h4>${service.name}</h4>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 10px;">${service.description}</p>
+                    <div>
+                        <a href="${service.url}" target="_blank">${service.url}</a>
+                        <button class="btn copy-btn" onclick="copyToClipboard('${service.url}')">复制链接</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // 滚动到结果区域
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('链接已复制到剪贴板！');
+            }).catch(function() {
+                // 备用复制方法
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('链接已复制到剪贴板！');
+            });
+        }
+
+        // 页面加载时预填充网址
+        window.onload = function() {
+            const urlInput = document.getElementById('originalUrl');
+            // 预填充您的 Netlify 地址
+            urlInput.value = 'https://68bfecc4565c470fecbb924b--zesty-basbousa-2f20de.netlify.app/';
+        };
+    </script>
+</body>
+</html>
