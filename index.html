@@ -258,11 +258,28 @@
             font-weight: 700;
         }
 
+        .countdown-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
         .countdown span {
             background: rgba(255,255,255,0.2);
             padding: 10px 15px;
             border-radius: 10px;
             backdrop-filter: blur(10px);
+            font-size: 1.8rem;
+            font-weight: 700;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .countdown small {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
         }
 
         @keyframes pulse {
@@ -459,6 +476,14 @@
             }
         }
 
+        /* 微信浏览器优化 */
+        @media screen and (max-width: 768px) {
+            body {
+                -webkit-text-size-adjust: 100%;
+                -ms-text-size-adjust: 100%;
+            }
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .hero h1 {
@@ -501,16 +526,27 @@
 
             .countdown {
                 flex-wrap: wrap;
-                gap: 10px;
-                font-size: 1.2rem;
+                gap: 15px;
+                font-size: 1rem;
                 justify-content: center;
+                align-items: center;
+            }
+
+            .countdown-item {
+                gap: 3px;
             }
 
             .countdown span {
-                padding: 8px 12px;
-                font-size: 1rem;
-                min-width: 60px;
+                padding: 8px 10px;
+                font-size: 1.4rem;
+                min-width: 45px;
                 text-align: center;
+                font-weight: 700;
+                border-radius: 8px;
+            }
+
+            .countdown small {
+                font-size: 0.8rem;
             }
 
             /* 价格卡片手机端适配 */
@@ -689,10 +725,22 @@
                     <h3>🎉 限时体验价活动</h3>
                     <p>2025年10月15日前享受超低体验价，先到先得！</p>
                     <div class="countdown" id="countdown">
-                        <span id="days">00</span>天 
-                        <span id="hours">00</span>时 
-                        <span id="minutes">00</span>分 
-                        <span id="seconds">00</span>秒
+                        <div class="countdown-item">
+                            <span id="days">00</span>
+                            <small>天</small>
+                        </div>
+                        <div class="countdown-item">
+                            <span id="hours">00</span>
+                            <small>时</small>
+                        </div>
+                        <div class="countdown-item">
+                            <span id="minutes">00</span>
+                            <small>分</small>
+                        </div>
+                        <div class="countdown-item">
+                            <span id="seconds">00</span>
+                            <small>秒</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -759,18 +807,18 @@
             <p>专业设备，专业服务，让每一次拍摄都成为精彩回忆</p>
             
             <div class="contact-info">
-                <div class="contact-item">
+                <!-- <div class="contact-item">
                     <i class="fas fa-phone"></i>
                     <span>400-888-8888</span>
-                </div>
+                </div> -->
                 <div class="contact-item">
                     <i class="fab fa-weixin"></i>
                     <span>微信: DJI-Rental</span>
                 </div>
-                <div class="contact-item">
+                <!-- <div class="contact-item">
                     <i class="fas fa-envelope"></i>
                     <span>rental@dji.com</span>
-                </div>
+                </div> -->
             </div>
             
             <div style="margin-top: 2rem;">
@@ -826,7 +874,7 @@
                 document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
             } else {
                 // 活动已结束
-                document.getElementById('countdown').innerHTML = '<span style="color: #ffeb3b;">活动已结束</span>';
+                document.getElementById('countdown').innerHTML = '<div style="color: #ffeb3b; font-size: 1.2rem; font-weight: 600;">活动已结束</div>';
                 // 隐藏限时体验价卡片
                 const promoCard = document.querySelector('.promo-card');
                 if (promoCard) {
